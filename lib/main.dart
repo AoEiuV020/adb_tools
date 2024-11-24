@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:adb_tools_interface/adb_tools_interface.dart';
 import 'package:provider/provider.dart';
 
 import 'pages/home_page.dart';
-import 'providers/device_manager.dart';
+import 'providers/device_manager_impl.dart';
 import 'utils/logger.dart';
 
 void main() {
@@ -16,8 +17,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => DeviceManager(),
+    return ChangeNotifierProvider<DeviceManager>(
+      create: (_) => DeviceManagerImpl(),
       child: MaterialApp(
         title: 'ADB工具',
         theme: ThemeData(

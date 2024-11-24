@@ -1,39 +1,40 @@
-import 'package:flutter/foundation.dart';
-
 import 'package:adb_tools_interface/adb_tools_interface.dart';
 import 'package:logging/logging.dart';
 
 import '../services/adb_command.dart';
 import '../services/device_storage.dart';
 
-class DeviceManager extends ChangeNotifier {
+class DeviceManagerImpl extends DeviceManager {
   static final _logger = Logger('DeviceManager');
   final AdbInterface _adb = AdbCommand();
   final DeviceStorage _storage = DeviceStorage();
   final List<Device> _devices = [];
   bool _isLoading = false;
 
+  @override
   List<Device> get devices => List.unmodifiable(_devices);
+
+  @override
   bool get isLoading => _isLoading;
 
+  @override
   AdbInterface get adb => _adb;
 
-  DeviceManager() {
+  DeviceManagerImpl() {
     _initDevices();
   }
 
   Future<void> _initDevices() async {
     try {
-      // 加载历史设备
       final savedDevices = await _storage.loadDevices();
       _devices.addAll(savedDevices);
-      // 刷新设备状态
       await refreshDevices();
     } catch (e, stackTrace) {
       _logger.severe('初始化设备列表失败', e, stackTrace);
     }
   }
 
+  @override
   Future<void> refreshDevices() async {
     _isLoading = true;
     notifyListeners();
@@ -42,7 +43,6 @@ class DeviceManager extends ChangeNotifier {
       _logger.info('刷新设备列表');
       final connectedDevices = await _adb.getDevices();
 
-      // 更新现有设备的状态
       for (var device in _devices) {
         final connectedDevice = connectedDevices.firstWhere(
           (d) => d.address == device.address,
@@ -54,16 +54,13 @@ class DeviceManager extends ChangeNotifier {
         }
       }
 
-      // 添加新设备
       for (var device in connectedDevices) {
         if (!_devices.any((d) => d.address == device.address)) {
           _devices.add(device);
         }
       }
 
-      // 保存设备列表
       await _storage.saveDevices(_devices);
-
       _logger.info('设备列表刷新完成，共${_devices.length}个设备');
     } catch (e, stackTrace) {
       _logger.severe('刷新设备列表失败', e, stackTrace);
@@ -73,6 +70,7 @@ class DeviceManager extends ChangeNotifier {
     }
   }
 
+  @override
   Future<void> addDevice(String address) async {
     try {
       _logger.info('尝试连接设备: $address');
@@ -81,7 +79,6 @@ class DeviceManager extends ChangeNotifier {
         final status = await _adb.checkDeviceStatus(address);
         final name = await _adb.getDeviceName(address) ?? '新设备';
 
-        // 检查设备是否已存在
         final index = _devices.indexWhere((d) => d.address == address);
         final device = Device(
           name: name,
@@ -106,6 +103,7 @@ class DeviceManager extends ChangeNotifier {
     }
   }
 
+  @override
   Future<void> removeDevice(String address) async {
     try {
       _logger.info('删除设备: $address');
@@ -119,6 +117,7 @@ class DeviceManager extends ChangeNotifier {
     }
   }
 
+  @override
   Future<void> disconnectDevice(String address) async {
     try {
       _logger.info('断开设备连接: $address');
