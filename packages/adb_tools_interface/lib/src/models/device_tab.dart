@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../services/adb_interface.dart';
-import 'device.dart';
+import '../models/device.dart';
+import '../providers/device_manager.dart';
 
 abstract class DeviceTab {
   final String label;
@@ -12,5 +12,6 @@ abstract class DeviceTab {
     required this.icon,
   });
 
-  Widget buildTabContent(BuildContext context, Device device, AdbInterface adb);
+  Widget buildTabContent(
+      BuildContext context, Device device, DeviceManager deviceManager);
 }

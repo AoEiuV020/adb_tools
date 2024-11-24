@@ -68,8 +68,7 @@ class DevicePage extends StatelessWidget {
         ),
         body: TabBarView(
           children: _tabs
-              .map((tab) =>
-                  tab.buildTabContent(context, device, deviceManager.adb))
+              .map((tab) => tab.buildTabContent(context, device, deviceManager))
               .toList(),
         ),
       ),

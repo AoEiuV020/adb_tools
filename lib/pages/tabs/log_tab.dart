@@ -11,7 +11,7 @@ class LogTab extends DeviceTab {
 
   @override
   Widget buildTabContent(
-      BuildContext context, Device device, AdbInterface adb) {
+      BuildContext context, Device device, DeviceManager deviceManager) {
     return const Center(child: Text('日志查看功能开发中...'));
   }
 }

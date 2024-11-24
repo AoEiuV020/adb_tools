@@ -11,7 +11,7 @@ class AppsTab extends DeviceTab {
 
   @override
   Widget buildTabContent(
-      BuildContext context, Device device, AdbInterface adb) {
+      BuildContext context, Device device, DeviceManager deviceManager) {
     return const Center(child: Text('应用管理功能开发中...'));
   }
 }
