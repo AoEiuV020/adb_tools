@@ -11,3 +11,21 @@ flutter开发跨平台连接安卓adb工具集合，
 1. 想个办法支持拓展，比如更复杂的日志标签管理功能，比如冻结功能，做成多个项目隔离开，
 1. 安卓本机连接考虑支持shizuku/root, 但这样功能的实现可能比较割裂，
 1. 想办法支持打开多个设备并在各页面切换，
+
+### adb
+
+参考adb_kit，  
+https://github.com/nightmare-space/adb_kit  
+使用adb可执行文件， 远程连接安卓设备，执行命令  
+对于安卓设备本身还支持连接本机，  
+
+### web端
+考虑直接tcp连接adb server，  
+似乎没有dart上的实现，参考java的，  
+https://github.com/vidstige/jadb  
+好像太复杂了些，  
+不知道有没有web专用的js实现的库能集成进来，或者直接web端绕过adb server连接手机的实现  
+https://github.com/yume-chan/ya-webadb  
+https://app.webadb.com/tcpip  
+
+
