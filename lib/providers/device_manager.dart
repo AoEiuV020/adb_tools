@@ -18,6 +18,8 @@ class DeviceManager extends ChangeNotifier {
   List<Device> get devices => List.unmodifiable(_devices);
   bool get isLoading => _isLoading;
 
+  AdbInterface get adb => _adb;
+
   DeviceManager() {
     _initDevices();
   }
