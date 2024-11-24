@@ -1,5 +1,16 @@
-# flutter_melos_template
-melos管理的flutter多模块项目模板，
+# adb_tools
 
-全局替换 AoEiuV020 \<实际用户名\>  
-全局替换 new_project \<实际项目名\>  
+A new Flutter project.
+
+## Getting Started
+
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
