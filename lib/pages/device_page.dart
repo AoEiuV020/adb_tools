@@ -12,32 +12,80 @@ class DevicePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(device.name),
-      ),
-      body: DefaultTabController(
-        length: 4,
-        child: Column(
-          children: [
-            const TabBar(
-              tabs: [
-                Tab(text: '命令行', icon: Icon(Icons.terminal)),
-                Tab(text: '文件', icon: Icon(Icons.folder)),
-                Tab(text: '应用', icon: Icon(Icons.apps)),
-                Tab(text: '日志', icon: Icon(Icons.article)),
-              ],
-            ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _buildTerminalTab(),
-                  _buildFileTab(),
-                  _buildAppsTab(),
-                  _buildLogTab(),
+    return DefaultTabController(
+      length: 4,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(device.name),
+              Text(
+                device.address,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+          bottom: const PreferredSize(
+            preferredSize: Size.fromHeight(kToolbarHeight),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TabBar(
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                labelStyle: TextStyle(fontSize: 14),
+                tabs: [
+                  Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.terminal),
+                        SizedBox(width: 8),
+                        Text('命令行'),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.folder),
+                        SizedBox(width: 8),
+                        Text('文件'),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.apps),
+                        SizedBox(width: 8),
+                        Text('应用'),
+                      ],
+                    ),
+                  ),
+                  Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.article),
+                        SizedBox(width: 8),
+                        Text('日志'),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildTerminalTab(),
+            _buildFileTab(),
+            _buildAppsTab(),
+            _buildLogTab(),
           ],
         ),
       ),
