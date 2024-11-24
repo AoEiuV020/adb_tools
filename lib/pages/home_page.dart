@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../models/device.dart';
+import 'package:provider/provider.dart';
+
 import '../models/device_status.dart';
+import '../providers/device_manager.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,25 +14,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _addressController = TextEditingController();
-
-  // 模拟已连接设备列表
-  final _connectedDevices = [
-    const Device(
-      name: '测试设备1',
-      status: DeviceStatus.connected,
-      address: '192.168.1.100:5555',
-    ),
-    const Device(
-      name: '测试设备2',
-      status: DeviceStatus.offline,
-      address: '192.168.1.101:5555',
-    ),
-    const Device(
-      name: '测试设备3',
-      status: DeviceStatus.unauthorized,
-      address: '192.168.1.102:5555',
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +52,11 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(width: 16),
                         ElevatedButton(
                           onPressed: () {
-                            // TODO: 实现连接逻辑
+                            final address = _addressController.text.trim();
+                            if (address.isNotEmpty) {
+                              context.read<DeviceManager>().addDevice(address);
+                              _addressController.clear();
+                            }
                           },
                           child: const Text('连接'),
                         ),
@@ -86,37 +73,41 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             Expanded(
-              child: ListView.builder(
-                itemCount: _connectedDevices.length,
-                itemBuilder: (context, index) {
-                  final device = _connectedDevices[index];
-                  return Card(
-                    child: ListTile(
-                      title: Text(device.name),
-                      subtitle: Text(device.address),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Chip(
-                            label: Text(device.status.label),
-                            backgroundColor: _getStatusColor(device.status),
+              child: Consumer<DeviceManager>(
+                builder: (context, deviceManager, child) {
+                  return ListView.builder(
+                    itemCount: deviceManager.devices.length,
+                    itemBuilder: (context, index) {
+                      final device = deviceManager.devices[index];
+                      return Card(
+                        child: ListTile(
+                          title: Text(device.name),
+                          subtitle: Text(device.address),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Chip(
+                                label: Text(device.status.label),
+                                backgroundColor: _getStatusColor(device.status),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: () {
+                                  deviceManager.removeDevice(device.address);
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.arrow_forward),
+                                onPressed: () {
+                                  // TODO: 实现进入设备管理页面逻辑
+                                },
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () {
-                              // TODO: 实现删除逻辑
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.arrow_forward),
-                            onPressed: () {
-                              // TODO: 实现进入设备管理页面逻辑
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
