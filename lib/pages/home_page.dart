@@ -117,9 +117,20 @@ class _HomePageState extends State<HomePage> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Chip(
-                                label: Text(device.status.label),
-                                backgroundColor: _getStatusColor(device.status),
+                              InkWell(
+                                onTap: () {
+                                  if (device.status ==
+                                      DeviceStatus.disconnected) {
+                                    deviceManager.addDevice(device.address);
+                                  } else {
+                                    deviceManager.removeDevice(device.address);
+                                  }
+                                },
+                                child: Chip(
+                                  label: Text(device.status.label),
+                                  backgroundColor:
+                                      _getStatusColor(device.status),
+                                ),
                               ),
                               const SizedBox(width: 8),
                               IconButton(
