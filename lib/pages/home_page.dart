@@ -123,7 +123,8 @@ class _HomePageState extends State<HomePage> {
                                       DeviceStatus.disconnected) {
                                     deviceManager.addDevice(device.address);
                                   } else {
-                                    deviceManager.removeDevice(device.address);
+                                    deviceManager
+                                        .disconnectDevice(device.address);
                                   }
                                 },
                                 child: Chip(
