@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:adb_tools_interface/adb_tools_interface.dart';
+import 'package:adb_tools_tab_command/adb_tools_tab_command.dart';
 import 'package:provider/provider.dart';
 
 import 'tabs/apps_tab.dart';
-import 'tabs/command_tab.dart';
 import 'tabs/file_tab.dart';
 import 'tabs/log_tab.dart';
 

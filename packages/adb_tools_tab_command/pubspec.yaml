@@ -1,6 +1,7 @@
-name: adb_tools_interface
+name: adb_tools_tab_command
 description: "A new Flutter package project."
 version: 1.0.0
+publish_to: 'none'
 
 environment:
   sdk: ^3.5.4
@@ -9,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  adb_tools_interface:
+    path: ../adb_tools_interface
 
 dev_dependencies:
   flutter_test:

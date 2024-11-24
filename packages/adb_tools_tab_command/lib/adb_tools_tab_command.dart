@@ -1,3 +1,5 @@
+library;
+
 import 'package:flutter/material.dart';
 
 import 'package:adb_tools_interface/adb_tools_interface.dart';

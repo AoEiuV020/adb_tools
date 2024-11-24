@@ -30,6 +30,7 @@ else
         dart create --template=package "$name"
     fi
     cd "$name"
+    cp "$ROOT/LICENSE" .
 fi
 if [ "$exec" = "flutter" ]; then
     echo 'include: package:flutter_lints/flutter.yaml' >analysis_options.yaml
