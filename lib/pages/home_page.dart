@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/device_status.dart';
+import '../pages/device_page.dart';
 import '../providers/device_manager.dart';
 
 class HomePage extends StatefulWidget {
@@ -111,42 +112,48 @@ class _HomePageState extends State<HomePage> {
                     itemBuilder: (context, index) {
                       final device = deviceManager.devices[index];
                       return Card(
-                        child: ListTile(
-                          title: Text(device.name),
-                          subtitle: Text(device.address),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  if (device.status ==
-                                      DeviceStatus.disconnected) {
-                                    deviceManager.addDevice(device.address);
-                                  } else {
-                                    deviceManager
-                                        .disconnectDevice(device.address);
-                                  }
-                                },
-                                child: Chip(
-                                  label: Text(device.status.label),
-                                  backgroundColor:
-                                      _getStatusColor(device.status),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DevicePage(device: device),
+                              ),
+                            );
+                          },
+                          child: ListTile(
+                            title: Text(device.name),
+                            subtitle: Text(device.address),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    if (device.status ==
+                                        DeviceStatus.disconnected) {
+                                      deviceManager.addDevice(device.address);
+                                    } else {
+                                      deviceManager
+                                          .disconnectDevice(device.address);
+                                    }
+                                  },
+                                  child: Chip(
+                                    label: Text(device.status.label),
+                                    backgroundColor:
+                                        _getStatusColor(device.status),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline),
-                                onPressed: () {
-                                  deviceManager.removeDevice(device.address);
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.arrow_forward),
-                                onPressed: () {
-                                  // TODO: 实现进入设备管理页面逻辑
-                                },
-                              ),
-                            ],
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed: () {
+                                    deviceManager.removeDevice(device.address);
+                                  },
+                                ),
+                                const Icon(Icons.arrow_forward),
+                              ],
+                            ),
                           ),
                         ),
                       );
