@@ -68,13 +68,44 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 24),
 
-            // 已连接设备列表
-            const Text('已连接设备',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            // 已连接设备列表标题栏
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '已连接设备',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Consumer<DeviceManager>(
+                  builder: (context, deviceManager, child) {
+                    return IconButton(
+                      icon: deviceManager.isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.refresh),
+                      onPressed: deviceManager.isLoading
+                          ? null
+                          : () => deviceManager.refreshDevices(),
+                    );
+                  },
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
+
+            // 设备列表
             Expanded(
               child: Consumer<DeviceManager>(
                 builder: (context, deviceManager, child) {
+                  if (deviceManager.devices.isEmpty) {
+                    return const Center(
+                      child: Text('暂无已连接设备'),
+                    );
+                  }
+
                   return ListView.builder(
                     itemCount: deviceManager.devices.length,
                     itemBuilder: (context, index) {
