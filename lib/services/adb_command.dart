@@ -1,5 +1,7 @@
 import 'dart:io';
+
 import 'package:logging/logging.dart';
+
 import '../models/device.dart';
 import '../models/device_status.dart';
 import 'adb_interface.dart';
@@ -12,15 +14,15 @@ class AdbCommand implements AdbInterface {
     try {
       _logger.info('执行ADB命令: $_adbPath ${arguments.join(' ')}');
       final result = await Process.run(_adbPath, arguments);
-      
+
       if (result.stdout.toString().isNotEmpty) {
         _logger.fine('命令输出: ${result.stdout}');
       }
-      
+
       if (result.stderr.toString().isNotEmpty) {
         _logger.warning('错误输出: ${result.stderr}');
       }
-      
+
       return result;
     } catch (e, stackTrace) {
       _logger.severe('ADB命令执行失败', e, stackTrace);

@@ -6,7 +6,7 @@ class AppLogger {
 
   static void init() {
     if (_initialized) return;
-    
+
     Logger.root.level = Level.ALL;
     Logger.root.onRecord.listen((record) {
       // ignore: avoid_print
@@ -20,7 +20,7 @@ class AppLogger {
         print('Stack trace:\n${record.stackTrace}');
       }
     });
-    
+
     _initialized = true;
   }
 
@@ -31,4 +31,4 @@ class AppLogger {
   static void warning(String message) => _logger.warning(message);
   static void severe(String message) => _logger.severe(message);
   static void shout(String message) => _logger.shout(message);
-} 
+}
