@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 
 import 'pages/home_page.dart';
 import 'providers/device_manager.dart';
+import 'utils/logger.dart';
 
 void main() {
+  AppLogger.init();
   runApp(const MyApp());
 }
 
