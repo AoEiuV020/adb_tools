@@ -34,6 +34,8 @@ dependencies:
   path: ^1.8.0
   logging: ^1.2.0
   shared_preferences: ^2.2.2
+  adb_tools_interface:
+    path: packages/adb_tools_interface
 
 
   # The following adds the Cupertino Icons font to your application.

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../models/device.dart';
-import '../../models/device_tab.dart';
-import '../../services/adb_interface.dart';
+import 'package:adb_tools_interface/adb_tools_interface.dart';
 
 class CommandTab extends DeviceTab {
   const CommandTab()

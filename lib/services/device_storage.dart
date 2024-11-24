@@ -1,9 +1,7 @@
 import 'dart:convert';
 
+import 'package:adb_tools_interface/adb_tools_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../models/device.dart';
-import '../models/device_status.dart';
 
 class DeviceStorage {
   static const String _key = 'device_history';

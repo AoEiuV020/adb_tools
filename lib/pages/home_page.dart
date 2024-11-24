@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:adb_tools_interface/adb_tools_interface.dart';
 import 'package:provider/provider.dart';
 
-import '../models/device_status.dart';
-import '../pages/device_page.dart';
 import '../providers/device_manager.dart';
+import 'device_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

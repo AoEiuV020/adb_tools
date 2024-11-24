@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../models/device.dart';
 import '../services/adb_interface.dart';
+import 'device.dart';
 
 abstract class DeviceTab {
   final String label;

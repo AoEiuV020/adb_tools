@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:adb_tools_interface/adb_tools_interface.dart';
 import 'package:provider/provider.dart';
 
-import '../models/device.dart';
-import '../models/device_tab.dart';
 import '../providers/device_manager.dart';
 import 'tabs/apps_tab.dart';
 import 'tabs/command_tab.dart';

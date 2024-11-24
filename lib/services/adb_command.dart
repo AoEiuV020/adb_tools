@@ -1,10 +1,7 @@
 import 'dart:io';
 
+import 'package:adb_tools_interface/adb_tools_interface.dart';
 import 'package:logging/logging.dart';
-
-import '../models/device.dart';
-import '../models/device_status.dart';
-import 'adb_interface.dart';
 
 class AdbCommand implements AdbInterface {
   static final _logger = Logger('AdbCommand');

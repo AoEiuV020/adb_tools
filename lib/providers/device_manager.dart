@@ -1,11 +1,9 @@
 import 'package:flutter/foundation.dart';
 
+import 'package:adb_tools_interface/adb_tools_interface.dart';
 import 'package:logging/logging.dart';
 
-import '../models/device.dart';
-import '../models/device_status.dart';
 import '../services/adb_command.dart';
-import '../services/adb_interface.dart';
 import '../services/device_storage.dart';
 
 class DeviceManager extends ChangeNotifier {
