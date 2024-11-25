@@ -113,6 +113,9 @@ class _HomePageState extends State<HomePage> {
                       return Card(
                         child: InkWell(
                           onTap: () {
+                            if (device.status == DeviceStatus.disconnected) {
+                              return;
+                            }
                             Navigator.push(
                               context,
                               MaterialPageRoute(
