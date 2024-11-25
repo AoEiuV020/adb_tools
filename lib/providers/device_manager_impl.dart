@@ -77,6 +77,10 @@ class DeviceManagerImpl extends DeviceManager {
       final success = await _adb.connectDevice(address);
       if (success) {
         final status = await _adb.checkDeviceStatus(address);
+        if (status == DeviceStatus.disconnected) {
+          _logger.warning('设备连接失败: $address');
+          return;
+        }
         final name = await _adb.getDeviceName(address) ?? '新设备';
 
         final index = _devices.indexWhere((d) => d.address == address);
