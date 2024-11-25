@@ -138,10 +138,33 @@ class AdbCommand implements AdbInterface {
 
   @override
   Future<String?> getDeviceName(String address) async {
+    final xiaomiName = await getXiaomiDeviceName(address);
+    if (xiaomiName != null) {
+      return xiaomiName;
+    }
     try {
       // 尝试获取设备型号
       final modelResult = await _runCommand(
           ['-s', address, 'shell', 'getprop', 'ro.product.model']);
+
+      if (modelResult.exitCode == 0) {
+        final model = modelResult.stdout.toString().trim();
+        if (model.isNotEmpty) {
+          return model;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<String?> getXiaomiDeviceName(String address) async {
+    try {
+      // 尝试获取设备型号
+      final modelResult = await _runCommand(
+          ['-s', address, 'shell', 'getprop', 'ro.product.marketname']);
 
       if (modelResult.exitCode == 0) {
         final model = modelResult.stdout.toString().trim();
