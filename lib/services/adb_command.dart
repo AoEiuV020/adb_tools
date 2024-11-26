@@ -1,7 +1,40 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:adb_tools_interface/adb_tools_interface.dart';
+import 'package:flutter_pty/flutter_pty.dart';
 import 'package:logging/logging.dart';
+
+/// Pty 的具体实现
+class _PtyShell implements Shell {
+  final Pty _pty;
+  final StreamController<String> _stdinController;
+
+  _PtyShell(this._pty) : _stdinController = StreamController<String>() {
+    _stdinController.stream.listen((data) {
+      _pty.write(utf8.encode(data));
+    });
+  }
+
+  @override
+  StreamSink<String> get stdin => _stdinController.sink;
+
+  @override
+  Stream<Uint8List> get stdout => _pty.output;
+
+  @override
+  Stream<Uint8List> get stderr =>
+      const Stream.empty(); // PTY 合并了 stdout 和 stderr
+
+  @override
+  Future<void> terminate() async {
+    await _stdinController.close();
+    _pty.kill();
+  }
+}
 
 class AdbCommand implements AdbInterface {
   static final _logger = Logger('AdbCommand');
@@ -121,6 +154,38 @@ class AdbCommand implements AdbInterface {
       return null;
     } catch (e) {
       return null;
+    }
+  }
+
+  @override
+  Future<Shell> startShell(String address) async {
+    try {
+      _logger.info('启动设备 Shell: $address');
+
+      if (kIsWeb) {
+        throw UnsupportedError('Web平台暂不支持终端功能');
+      }
+
+      Pty pty;
+      if (Platform.isWindows) {
+        pty = Pty.start(
+          'cmd',
+          arguments: ['/C', _adbPath, '-s', address, 'shell'],
+          environment: Platform.environment,
+          workingDirectory: '/',
+        );
+      } else {
+        pty = Pty.start(
+          _adbPath,
+          arguments: ['-s', address, 'shell'],
+          environment: Platform.environment,
+          workingDirectory: '/',
+        );
+      }
+      return _PtyShell(pty);
+    } catch (e, stackTrace) {
+      _logger.severe('启动设备 Shell 失败', e, stackTrace);
+      rethrow;
     }
   }
 }

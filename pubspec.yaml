@@ -38,6 +38,7 @@ dependencies:
     path: packages/adb_tools_interface
   adb_tools_tab_command:
     path: packages/adb_tools_tab_command
+  flutter_pty: ^0.4.0
 
 
   # The following adds the Cupertino Icons font to your application.

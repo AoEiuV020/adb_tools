@@ -12,6 +12,7 @@ dependencies:
     sdk: flutter
   adb_tools_interface:
     path: ../adb_tools_interface
+  xterm: ^4.0.0
 
 dev_dependencies:
   flutter_test:

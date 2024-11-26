@@ -1,5 +1,6 @@
 import '../models/device.dart';
 import '../models/device_status.dart';
+import 'shell.dart';
 
 abstract class AdbInterface {
   /// 获取已连接的设备列表
@@ -16,4 +17,7 @@ abstract class AdbInterface {
 
   /// 获取设备名称
   Future<String?> getDeviceName(String address);
+
+  /// 启动一个交互式的 ADB Shell
+  Future<Shell> startShell(String address);
 }
