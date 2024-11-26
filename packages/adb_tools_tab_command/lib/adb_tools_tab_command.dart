@@ -36,9 +36,13 @@ class CommandTerminal extends StatefulWidget {
   State<CommandTerminal> createState() => _CommandTerminalState();
 }
 
-class _CommandTerminalState extends State<CommandTerminal> {
+class _CommandTerminalState extends State<CommandTerminal>
+    with AutomaticKeepAliveClientMixin {
   late final terminal = Terminal();
   Shell? _shell;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -74,6 +78,7 @@ class _CommandTerminalState extends State<CommandTerminal> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return TerminalView(
       terminal,
       keyboardType: TextInputType.multiline,

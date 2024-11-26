@@ -67,6 +67,7 @@ class DevicePage extends StatelessWidget {
           ),
         ),
         body: TabBarView(
+          physics: const RangeMaintainingScrollPhysics(),
           children: _tabs
               .map((tab) => tab.buildTabContent(context, device, deviceManager))
               .toList(),
