@@ -42,6 +42,7 @@ class _CommandTerminalState extends State<CommandTerminal>
     with AutomaticKeepAliveClientMixin {
   late final terminal = Terminal();
   Shell? _shell;
+  final _focusNode = FocusNode();
 
   @override
   bool get wantKeepAlive => true;
@@ -50,6 +51,9 @@ class _CommandTerminalState extends State<CommandTerminal>
   void initState() {
     super.initState();
     _startShell();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
   }
 
   Future<void> _startShell() async {
@@ -75,6 +79,7 @@ class _CommandTerminalState extends State<CommandTerminal>
   @override
   void dispose() {
     _shell?.terminate();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -82,6 +87,7 @@ class _CommandTerminalState extends State<CommandTerminal>
   Widget build(BuildContext context) {
     super.build(context);
     return TerminalView(
+      focusNode: _focusNode,
       terminal,
       keyboardType: TextInputType.multiline,
       textStyle: const TerminalStyle(
