@@ -4,7 +4,7 @@ import 'dart:typed_data';
 /// Shell 进程的抽象接口
 abstract class Shell {
   /// Shell 的标准输入流
-  StreamSink<String> get stdin;
+  StreamSink<Uint8List> get stdin;
 
   /// Shell 的标准输出流
   Stream<Uint8List> get stdout;

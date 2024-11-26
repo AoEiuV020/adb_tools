@@ -1,5 +1,7 @@
 library;
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import 'package:adb_tools_interface/adb_tools_interface.dart';
@@ -55,15 +57,15 @@ class _CommandTerminalState extends State<CommandTerminal>
       _shell = await widget.deviceManager.adb.startShell(widget.device.address);
 
       _shell!.stdout.listen((data) {
-        terminal.write(String.fromCharCodes(data));
+        terminal.write(utf8.decode(data));
       });
 
       _shell!.stderr.listen((data) {
-        terminal.write(String.fromCharCodes(data));
+        terminal.write(utf8.decode(data));
       });
 
       terminal.onOutput = (data) {
-        _shell?.stdin.add(data);
+        _shell?.stdin.add(utf8.encode(data));
       };
     } catch (e) {
       terminal.write('错误: 无法启动ADB Shell\n$e\n');

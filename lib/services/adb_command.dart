@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -11,16 +10,16 @@ import 'package:logging/logging.dart';
 /// Pty 的具体实现
 class _PtyShell implements Shell {
   final Pty _pty;
-  final StreamController<String> _stdinController;
+  final StreamController<Uint8List> _stdinController;
 
-  _PtyShell(this._pty) : _stdinController = StreamController<String>() {
+  _PtyShell(this._pty) : _stdinController = StreamController<Uint8List>() {
     _stdinController.stream.listen((data) {
-      _pty.write(utf8.encode(data));
+      _pty.write(data);
     });
   }
 
   @override
-  StreamSink<String> get stdin => _stdinController.sink;
+  StreamSink<Uint8List> get stdin => _stdinController.sink;
 
   @override
   Stream<Uint8List> get stdout => _pty.output;
