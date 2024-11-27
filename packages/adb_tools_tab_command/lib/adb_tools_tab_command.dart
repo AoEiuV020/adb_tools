@@ -76,6 +76,17 @@ class _CommandTerminalState extends State<CommandTerminal>
     }
   }
 
+  void _resetTerminal() async {
+    // 关闭现有shell
+    await _shell?.terminate();
+    // 清空终端
+    // terminal.clear();
+    // 重新启动shell
+    await _startShell();
+    // 重新获取焦点
+    _focusNode.requestFocus();
+  }
+
   @override
   void dispose() {
     _shell?.terminate();
@@ -86,15 +97,28 @@ class _CommandTerminalState extends State<CommandTerminal>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return TerminalView(
-      focusNode: _focusNode,
-      terminal,
-      keyboardType: TextInputType.multiline,
-      textStyle: const TerminalStyle(
-        fontSize: 14,
-        fontFamily: 'monospace',
-      ),
-      padding: const EdgeInsets.all(8),
+    return Stack(
+      children: [
+        TerminalView(
+          focusNode: _focusNode,
+          terminal,
+          keyboardType: TextInputType.multiline,
+          textStyle: const TerminalStyle(
+            fontSize: 14,
+            fontFamily: 'monospace',
+          ),
+          padding: const EdgeInsets.all(8),
+        ),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: FloatingActionButton(
+            mini: true,
+            onPressed: _resetTerminal,
+            child: const Icon(Icons.refresh),
+          ),
+        ),
+      ],
     );
   }
 }
