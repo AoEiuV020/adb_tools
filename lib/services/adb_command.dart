@@ -188,19 +188,24 @@ class AdbCommand implements AdbInterface {
         throw UnsupportedError('Web平台暂不支持终端功能');
       }
 
+      final environment = <String, String>{
+        'ANDROID_SERIAL': address,
+        // 没有这个的话adb无法复用daemon，会试图新建一个，导致冲突，
+        ...Platform.environment,
+      };
       Pty pty;
       if (Platform.isWindows) {
         pty = Pty.start(
           'cmd',
-          arguments: ['/C', _adbPath, '-s', address, 'shell'],
-          environment: Platform.environment,
+          arguments: ['/C', _adbPath, 'shell'],
+          environment: environment,
           workingDirectory: '/',
         );
       } else {
         pty = Pty.start(
           _adbPath,
-          arguments: ['-s', address, 'shell'],
-          environment: Platform.environment,
+          arguments: ['shell'],
+          environment: environment,
           workingDirectory: '/',
         );
       }
