@@ -74,11 +74,23 @@ class DeviceManagerImpl extends DeviceManager {
   Future<void> addDevice(String address) async {
     try {
       _logger.info('尝试连接设备: $address');
+
+      if (_devices.indexWhere((d) => d.address == address) == -1) {
+        final device = Device(
+          name: '新设备',
+          address: address,
+          status: DeviceStatus.disconnected,
+        );
+        _devices.add(device);
+        await _storage.saveDevices(_devices);
+        notifyListeners();
+      }
+
       final success = await _adb.connectDevice(address);
       if (success) {
         final status = await _adb.checkDeviceStatus(address);
-        if (status == DeviceStatus.disconnected) {
-          _logger.warning('设备连接失败: $address');
+        if (status != DeviceStatus.connected) {
+          _logger.warning('设备连接失败: $address, 状态: $status');
           return;
         }
         final name = await _adb.getDeviceName(address) ?? '新设备';
