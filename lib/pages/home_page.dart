@@ -52,8 +52,11 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(width: 16),
                         ElevatedButton(
                           onPressed: () {
-                            final address = _addressController.text.trim();
+                            var address = _addressController.text.trim();
                             if (address.isNotEmpty) {
+                              if (!address.contains(':')) {
+                                address = '$address:5555';
+                              }
                               context.read<DeviceManager>().addDevice(address);
                               _addressController.clear();
                             }
