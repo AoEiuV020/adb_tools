@@ -47,19 +47,15 @@ class _HomePageState extends State<HomePage> {
                               hintText: '例如: 192.168.1.100:5555',
                               border: OutlineInputBorder(),
                             ),
+                            onSubmitted: (value) {
+                              _connectDevice(value.trim());
+                            },
                           ),
                         ),
                         const SizedBox(width: 16),
                         ElevatedButton(
                           onPressed: () {
-                            var address = _addressController.text.trim();
-                            if (address.isNotEmpty) {
-                              if (!address.contains(':')) {
-                                address = '$address:5555';
-                              }
-                              context.read<DeviceManager>().addDevice(address);
-                              _addressController.clear();
-                            }
+                            _connectDevice(_addressController.text.trim());
                           },
                           child: const Text('连接'),
                         ),
@@ -184,6 +180,16 @@ class _HomePageState extends State<HomePage> {
       case DeviceStatus.offline:
       case DeviceStatus.disconnected:
         return Colors.grey.shade300;
+    }
+  }
+
+  void _connectDevice(String address) {
+    if (address.isNotEmpty) {
+      if (!address.contains(':')) {
+        address = '$address:5555';
+      }
+      context.read<DeviceManager>().addDevice(address);
+      _addressController.clear();
     }
   }
 
