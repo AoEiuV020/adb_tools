@@ -113,15 +113,16 @@ class _HomePageState extends State<HomePage> {
                         child: InkWell(
                           onTap: () {
                             if (device.status == DeviceStatus.disconnected) {
-                              return;
+                              deviceManager.addDevice(device.address);
+                            } else {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      DevicePage(device: device),
+                                ),
+                              );
                             }
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    DevicePage(device: device),
-                              ),
-                            );
                           },
                           child: ListTile(
                             title: Text(device.name),
