@@ -3,16 +3,22 @@ import 'package:logging/logging.dart';
 
 import '../services/adb_command.dart';
 import '../services/device_storage.dart';
+import '../utils/sorted_list.dart';
 
 class DeviceManagerImpl extends DeviceManager {
   static final _logger = Logger('DeviceManager');
   final AdbInterface _adb = AdbCommand();
   final DeviceStorage _storage = DeviceStorage();
-  final List<Device> _devices = [];
+  final SortedList<Device> _devices = SortedList<Device>((a, b) {
+    // 首先按照 status 的枚举顺序排序
+    final statusCompare = a.status.index.compareTo(b.status.index);
+    // 如果 status 相同，则按照 address 排序
+    return statusCompare != 0 ? statusCompare : a.address.compareTo(b.address);
+  });
   bool _isLoading = false;
 
   @override
-  List<Device> get devices => List.unmodifiable(_devices);
+  List<Device> get devices => _devices.items;
 
   @override
   bool get isLoading => _isLoading;
@@ -43,24 +49,23 @@ class DeviceManagerImpl extends DeviceManager {
       _logger.info('刷新设备列表');
       final connectedDevices = await _adb.getDevices();
 
-      for (var device in _devices) {
+      // 更新现有设备状态
+      for (var device in List.from(_devices.items)) {
         final connectedDevice = connectedDevices.firstWhere(
           (d) => d.address == device.address,
           orElse: () => device.copyWith(status: DeviceStatus.disconnected),
         );
-        final index = _devices.indexWhere((d) => d.address == device.address);
-        if (index != -1) {
-          _devices[index] = connectedDevice;
-        }
+        _devices.update(connectedDevice, (d) => d.address == device.address);
       }
 
+      // 添加新设备
       for (var device in connectedDevices) {
-        if (!_devices.any((d) => d.address == device.address)) {
+        if (!_devices.items.any((d) => d.address == device.address)) {
           _devices.add(device);
         }
       }
 
-      await _storage.saveDevices(_devices);
+      await _storage.saveDevices(_devices.items);
       _logger.info('设备列表刷新完成，共${_devices.length}个设备');
     } catch (e, stackTrace) {
       _logger.severe('刷新设备列表失败', e, stackTrace);
@@ -75,14 +80,14 @@ class DeviceManagerImpl extends DeviceManager {
     try {
       _logger.info('尝试连接设备: $address');
 
-      if (_devices.indexWhere((d) => d.address == address) == -1) {
+      if (_devices.items.indexWhere((d) => d.address == address) == -1) {
         final device = Device(
           name: '新设备',
           address: address,
           status: DeviceStatus.disconnected,
         );
         _devices.add(device);
-        await _storage.saveDevices(_devices);
+        await _storage.saveDevices(_devices.items);
         notifyListeners();
       }
 
@@ -95,20 +100,18 @@ class DeviceManagerImpl extends DeviceManager {
         }
         final name = await _adb.getDeviceName(address) ?? '新设备';
 
-        final index = _devices.indexWhere((d) => d.address == address);
         final device = Device(
           name: name,
           address: address,
           status: status,
         );
 
-        if (index != -1) {
-          _devices[index] = device;
-        } else {
-          _devices.add(device);
-        }
+        _devices.update(
+          device,
+          (d) => d.address == address,
+        );
 
-        await _storage.saveDevices(_devices);
+        await _storage.saveDevices(_devices.items);
         _logger.info('设备连接成功: $address ($name)');
         notifyListeners();
       } else {
@@ -125,7 +128,7 @@ class DeviceManagerImpl extends DeviceManager {
       _logger.info('删除设备: $address');
       await _adb.disconnectDevice(address);
       _devices.removeWhere((device) => device.address == address);
-      await _storage.saveDevices(_devices);
+      await _storage.saveDevices(_devices.items);
       _logger.info('设备已删除: $address');
       notifyListeners();
     } catch (e, stackTrace) {
@@ -138,12 +141,12 @@ class DeviceManagerImpl extends DeviceManager {
     try {
       _logger.info('断开设备连接: $address');
       await _adb.disconnectDevice(address);
-      final index = _devices.indexWhere((d) => d.address == address);
-      if (index != -1) {
-        _devices[index] =
-            _devices[index].copyWith(status: DeviceStatus.disconnected);
-        notifyListeners();
-      }
+      final device = _devices.items.firstWhere((d) => d.address == address);
+      _devices.update(
+        device.copyWith(status: DeviceStatus.disconnected),
+        (d) => d.address == address,
+      );
+      notifyListeners();
     } catch (e, stackTrace) {
       _logger.severe('断开设备连接失败: $address', e, stackTrace);
     }
