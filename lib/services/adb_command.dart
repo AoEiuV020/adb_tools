@@ -42,8 +42,8 @@ class AdbCommand implements AdbInterface {
   Future<ProcessResult> _runCommand(List<String> arguments) async {
     try {
       _logger.info('执行ADB命令: $_adbPath ${arguments.join(' ')}');
-      // 在mac上如果没有runInShell，会闪退，在finder中启动会闪退， open或者可执行文件启动正常，
-      // 可能是不会继承shell的环境变量，找不到adb命令，
+      // 在mac上如果没有runInShell，会闪退，在finder中启动会闪退无法拦截， open或者可执行文件启动正常，
+      // 可能是不会继承shell的环境变量，找不到adb命令，奇怪的是直接调试启动就算找不到也不会闪退，
       final result = await Process.run(_adbPath, arguments, runInShell: true);
 
       if (result.stdout.toString().isNotEmpty) {

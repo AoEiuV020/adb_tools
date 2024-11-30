@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:adb_tools_interface/adb_tools_interface.dart';
@@ -7,9 +9,17 @@ import 'pages/home_page.dart';
 import 'providers/device_manager_impl.dart';
 import 'utils/logger.dart';
 
-void main() {
-  AppLogger.init();
-  runApp(const MyApp());
+void main() async {
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    // 再初始化应用日志记录器
+    await AppLogger.init();
+
+    runApp(const MyApp());
+  }, (error, stack) {
+    AppLogger.shout('Uncaught error: ', error, stack);
+  });
 }
 
 class MyApp extends StatelessWidget {
