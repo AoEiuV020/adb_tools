@@ -1,39 +1,189 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# adb_tools_tab_apps
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+## 功能
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+使用adb管理设备应用，
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+### 主标签页
+包含应用列表，  
+一行一个app， 显示app的图标，名称，包名，版本号，安装时间，启用状态，大小，运行状态，等等，  
+停用的app整行变色强调状态，
+底部包含一行自适应宽高的按钮， 包括刷新， 排序，隐藏，多选，  
+通过adb获取列表并显示，  
+先获取所有app包名显示出列表， 其他信息懒加载，  
+点击弹出操作， 包括打开， 卸载，刷新， 停用， 启用，  
 
-## Features
+刷新，所有信息都尽量缓存， 包括图标，全部信息已经获取的话就不再重新获取， 点击刷新时清空所有缓存重新获取，  
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+排序，默认按包名排序，点击后弹出选择，包括按名称，安装时间，大小，等等  
 
-## Getting started
+隐藏，默认不隐藏，点击后弹多选， 可以隐藏系统应用， 停用应用，  
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+多选，item默认没有多选框，点击多选后出现，此时item点击选中，长按弹出原本点击出现的单个app操作弹窗，此时多选按钮变成操作按钮， 点击出现批量操作的弹窗，其中一个操作是取消多选，  
 
-## Usage
+排序和隐藏状态都是本地持久化记住的，
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+### AI
+帮我实现这个adb应用管理模块， 状态管理尽量使用provider, 日志使用logging, 封装尽量细一点， 一个class一个文件，
+app信息方面，能获取什么尽量获取，其他操作之类功能也是， 能实现什么尽量加上，
+使用deviceManager.adb操作设备，需要什么方法自己添加，输入输出尽量和实现无关，只返回处理过的数据，
 
-```dart
-const like = 'sample';
-```
+AdbInterface没有执行命令的功能， 你要把adb相关细节实现放到AdbCommand中， 然后添加的AppInfo也应该放到adb_tools_interface模块里，供主模块和应用管理模块使用， 
+然后继续实现ui在AppsTab，
 
-## Additional information
+别偷懒直接暴露runCommand，封装每一个命令，adb_tools_tab_apps模块里不要有任何和adb相关的细节， 所有数据从adb_tools_interface模块中获取，
+然后继续实现ui，
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+AdbCommand还有好几个方法没实现， 先实现这里，然后继续实现ui，
+
+继续实现ui，
+
+Provider.of尽量改用context.read这种， 然后异步中使用context可能需要判断mounted,
+
+AdbCommand，有个pm没跟在shell后面， 再实现仔细检查一下新方法，不要犯这种低级错误， 
+
+dumpsys也存在一样的问题， 多检查一下各方面，各命令用法，
+
+你这没有缓存app信息， 全部缓存起来， 不点击刷新不重新获取， 
+
+我是要本地持久化永久保存，包括图标，你想个办法好好保存一下这些东西，
+
+懒加载没有实现， 仔细想想懒加载和排序有点冲突了， 看看能不能这样， 
+获取列表和获取信息分开，获取列表后直接就排序保存显示，此时没有其他信息， 所以只能根据包名排序， 
+然后显示一个item加载一个item的信息，此时不动排序，
+同时刷新也要改改， 点击刷新不删除缓存， 直接重新加载列表，然后用以缓存的信息排序显示， 
+加一个长按刷新删除缓存彻底刷新，
+
+adb几个信息的获取完全不行， 先不改这个了， 我暂且改成空，
+主要是一个懒加载还是没效果， 只有一个loading状态不够， 列表已经加载好了ui还在转圈，
+
+几个对话框都不行， provider用法不对， 要先用原context获取provider，再用dialog的context传入provider,
+
+1. dialog的context没必要改名dialogContext，直接使用context就好，
+2. 对话框处理还是不对，重点看看 AppsTab， 包括showModalBottomSheet之类的所有弹窗都是， 要注意用原context获取provider，再用弹窗的context传入provider,
+
+Provider用的不对， 这里需要ChangeNotifierProvider，几个地方都检查一下， 
+
+刷新按钮显示两行文字太丑了， 拆成两个按钮吧，一个刷新， 一个清缓存刷新，看看怎么显示能清晰简短一点，
+
+还有一个Provider.value用法不对， 要使用ChangeNotifierProvider.value,你仔细检查一下不要犯这种低级错误， 
+
+为了方便测试， app操作菜单添加一个刷新按钮， 只刷新这一个app的信息， 并且不动排序，
+
+不只是刷新， 对单个app的所有操作只更新这一个app的信息， 不重新加载，不影响排序，
+
+关于隐藏系统应用和已停用应用， 不要在ui显示时过滤，而是在查询时直接过滤掉， 或者最好直接不查出来，
+
+差不多ui层先这样了， 然后开始改adb获取数据具体实现，
+一个一个改， 我没提的部分先不动，
+首先是获取应用列表， adb参数传递-f然后再split感觉很多余， 直接不使用这个-f参数，就会直接返回package:包名，容易获取一些， 
+然后是关于隐藏系统应用， 直接在这里加个参数-3就能直接不获取系统应用了， 没必要获取了再过滤， 
+
+AppManager的getPackageList方法， 这里没有_provider，showSystemApps要从外部传入，
+AdbCommand的getPackageList方法，你没改方法签名啊， 包括接口也要改，
+
+同理还有隐藏已停用的应用， 使用参数-e只获取启用的应用， 
+
+AppsProvider初始化这块有问题， loadApps调用了两次， 仔细检查一下这快，还存在loadApps时_showSystemApps没获取到正确值的情况， 
+
+不对， 你看看AppsTab这里创建AppsProvider时就调用了loadApps， 然后AppsProvider的init方法里又调用了loadApps， 
+
+AdbCommand添加一些测试方法， 不要mock，我要实际运行获取数据处理， 你封装好留好参数， 几个数据分开测试，都封装好， 包括版本号和安装时间获取都分开封装，
+
+是我没说清楚， 我意思是你给我添加一个单元测试的文件，我好测试AdbCommand，另外getAppInfo中解析版本号和安装时间的代码都封装一下以便在单元测试这边调用， 
+
+1. 添加的解析方法应该可以用visibleForTesting限制可见性， 
+2. 版本号解析出来是空， 你检查一下正则，
+3. 安装时间例子不对， 我调整了例子字符串，你修改一下处理方法，注意时间可能获取到不止一个， 要取第一个，
+
+版本号没问题了， 时间还是不对， 你再看看adb_command_test， 调整一下解析和测试代码，注意不要动例子字符串，
+
+测试代码也改改，我只改了例子字符串没改expect，
+
+把是否系统应用和是否隐藏应用的判断和测试都分开， 一次只处理一个， 另外判断系统应用的代码不对， 我调整了例子字符串，你看看判断flags中的SYSTEM，
+
+判断应用停用状态这个还是不对， 放弃从dumpsys package获取， 单独添加个方法，
+调用比如adb shell pm list packages -d <package_name>这样如果返回结果中有个包名等于<package_name>则表示应用被停用， 
+注意这个方法可以暴露出来，声明同步到接口，
+
+parseEnabled这个旧的测试代码已经废了，检查一下相关都删了，
+
+我强调过了，停用应用这个判断要用等于，不能用包含， 因为可能其他app包名包含这个，不能串了，测试也体现一下这个，
+
+测试代码里的设备id，抽出来，之后可能还有多处用到，
+
+来改app大小获取，让我们使用pm list packages -f获取apk文件路径，然后获取该文件大小，
+要注意的是这个命令返回的格式， 是package:<文件路径>=<包名>， 需要确认包名完全相等，然后注意文件路径可能包含空格，
+
+我都说过了， 不能简单使用split('=')，中间的文件路径可能包含等号，
+好吧我没说，前面AI自动了空格，其实不是空格， 是等号， 
+总之重新调整一下， 正确处理这个等号， 
+
+测试也调整， 压根不存在包含空格的包名，
+
+测试代码中一堆的AdbCommand()抽出来，只创建一次，
+
+来改判断app运行状态， 注意考虑包名可能被其他app包含， 所以要从输出结果中完全匹配包名，
+
+不是这样啊， grep还是要用的， 避免输出太多数据，然后收到结果再过滤一下， 
+
+我调整了一下测试代码里提供的包名，你看着调整一下测试代码，
+
+调整一下获取app大小， 改通过adb shell pm path <包名> 获取apk路径， 这个更靠谱， package:后面就是路径，不需要处理， 不需要判断包名，
+
+app名太难获取了， 先不获取了， 你改一下AppListItem，没有名字就不显示，不要重复显示包名，
+
+调整AppsProvider，各种操作之后刷新该app的状态，
+
+别所有信息都通过getBasicInfo获取， 去掉这个方法， 每一个信息单独获取，多添加几个方法，app操作后刷新时只获取需要的信息，
+
+refreshApp效果不要动， app所有信息都要更新，
+
+不够，是所有，除了包名以外其他信息都重新获取，
+
+东缺一块西缺一块的， 首先获取图标的方法就没有， 然后AdbCommand里压根没按需要调整，
+
+仔细想想getAppInfo还是应该暴露出去， 刷新app时就通过这个一次性获取所有信息， 其他情况只获取需要的信息，
+
+好多app操作都是比较慢的， 你检查一下，要等待adb命令返回的场景都加个状态让用户等一下，
+
+等待过程可以先把弹窗关闭掉，这样才能看到等待指示器，
+
+关于懒加载，刷新列表后不要自动开始加载app的信息， 等ui那边的ListView.builder真的开始build时再判断，没有缓存就加载，给每个app一个加载中的图标状态，就放在右边的trailing，注意避免同一个app重复刷新，
+
+按你这个实现思路，其实并不需要AppInfo中添加isLoading，需要的地方直接获取AppsProvider加个方法判断是否在加载就好了，另外_loadingDetails已经没用了，你看着清理一下， 
+
+不能真的在ListView.builder里直接调provider开始加载，因为加载方法又会触发notify导致死循环错误，
+
+你这个isFullyLoaded没有正确赋值，导致不断加载，加载完还是未加载状态又开始加载了， 按理说只要通过getAppInfo获取到数据就算加载完毕了， 另外如果获取失败也缓存一下这个失败状态，避免死循环加载，
+
+_sortApps这个不对， 不是说只要有应用信息未加载，就按包名排序， 我希望的是哪怕没有加载完，也能排序， 也就是把包名作为最低优先级的排序条件，比如根据大小排序， 大小相同的，就按包名排序， 这样未加载的app也能排序， 
+
+再加一个排序倒序的功能，要注意的是， 不管怎么排，未加载的app都在最后，
+
+这个排序处理的不大好， 你知道其他语言的Comparator.then吗？把多个条件组合成线性的设置，flutter看看有没有类似的方案， 没有的话你简单模仿一下， 就是设置多个排序条件，完全加载是最优先的条件， sortBy其次， 包名最后， 
+
+我看到一个第三方库名叫comparators， 你看看这个库能不能用上，尽量不要自己写，
+
+别瞎编，你写的代码压根不能用， 你看看这个地址，是这个库的说明， https://pub.dev/packages/comparators
+
+放弃吧，改回你前面写的ComparatorChain， 另外能不能告诉我你这个comparators是在哪里看到的， 有相关信息和链接吗，
+
+倒序的处理不对， 不能在最后倒序， 因为三个排序条件只有sortBy是要倒序的， 所以处理方案应该是针对sortBy结果取相反数，
+
+已加载这个排序条件也不对， 没处理相等的情况， 
+
+你这个处理就挺多余， 相等情况返回0就好了， 没必要在这里处理包名，应该沿用线性的多个条件，以便后续可能有调整， 
+
+排序对话框里的倒序图标没有及时更新，
+
+排序的升降好像不大对，你仔细检查一下， 
+
+怎么感觉还是不对呢， 为什么在最后特殊处理'name'，没必要吧，所有都是默认升序，从小到大，倒序时相反，
+
+多选时右下角的图标没有提示文字， 检查一下，像这种只有图标的按钮， 要加个tooltip提示文字，
+
+
+用了 cursor + claude-3.5-sonnet 近百个请求额度，
+整体还行， 自己的操作不多，简单看看代码，补一些漏import的，少数bug需要自己排查再告诉AI，
+获取app名字和图标无法简单实现，AI无法解决，其他都实现了， 简单验收符合需求，

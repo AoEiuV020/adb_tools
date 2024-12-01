@@ -12,6 +12,13 @@ dependencies:
     sdk: flutter
   adb_tools_interface:
     path: ../adb_tools_interface
+  provider: ^6.1.1
+  logging: ^1.2.0
+  path: ^1.8.3
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
 dev_dependencies:
   flutter_test:
