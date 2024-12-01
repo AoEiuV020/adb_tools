@@ -183,6 +183,13 @@ _sortApps这个不对， 不是说只要有应用信息未加载，就按包名�
 
 多选时右下角的图标没有提示文字， 检查一下，像这种只有图标的按钮， 要加个tooltip提示文字，
 
+调整AppStorage，这缓存不行， 
+一方面getApplicationDocumentsDirectory可能需要权限，改用getApplicationSupportDirectory靠谱一些，
+一方面这个代码不支持web，参考LogWriter分成三个文件实现，避免web加载io的代码，web实现暂且直接留空，
+
+仔细想想既然是缓存，用getApplicationCacheDirectory应该更好吧，这个也是全平台不用权限的吧，在注释里写上各平台的路径，
+
+loadAppInfos中的过滤不对， path是全路径，不可能deviceId开头， 应该获取文件名，看看怎么处理好一些，
 
 用了 cursor + claude-3.5-sonnet 近百个请求额度，
 整体还行， 自己的操作不多，简单看看代码，补一些漏import的，少数bug需要自己排查再告诉AI，
