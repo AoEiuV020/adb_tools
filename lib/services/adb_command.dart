@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -69,7 +70,7 @@ class AdbCommand implements AdbInterface {
       throw Exception('获取设备列表失败: ${result.stderr}');
     }
 
-    final lines = result.stdout.toString().split('\n');
+    final lines = const LineSplitter().convert(result.stdout.toString());
     final devices = <Device>[];
 
     // 跳过第一行 "List of devices attached"
@@ -234,9 +235,8 @@ class AdbCommand implements AdbInterface {
     }
 
     final result = await _runCommand(args);
-    return result.stdout
-        .toString()
-        .split('\n')
+    return const LineSplitter()
+        .convert(result.stdout.toString())
         .where((line) => line.isNotEmpty)
         .map((line) => line.substring(8)) // 移除"package:"前缀
         .toList();
@@ -427,7 +427,6 @@ class AdbCommand implements AdbInterface {
   @override
   Future<bool> isAppRunning(String deviceAddress, String packageName) async {
     try {
-      // 先用grep过滤,减少输出数据量
       final result = await _runCommand([
         '-s',
         deviceAddress,
@@ -439,18 +438,13 @@ class AdbCommand implements AdbInterface {
         packageName,
       ]);
 
-      // 再精确匹配包名
-      return result.stdout
-          .toString()
-          .split('\n')
+      return const LineSplitter()
+          .convert(result.stdout.toString())
           .where((line) => line.isNotEmpty)
           .any((line) {
         final parts = line.trim().split(RegExp(r'\s+'));
         if (parts.isEmpty) return false;
-
-        // 进程名在最后一列
         final processName = parts.last;
-        // 精确匹配包名
         return processName == packageName;
       });
     } catch (e) {
@@ -542,13 +536,11 @@ class AdbCommand implements AdbInterface {
         packageName,
       ]);
 
-      // 使用精确匹配而不是包含
-      return result.stdout
-          .toString()
-          .split('\n')
+      return const LineSplitter()
+          .convert(result.stdout.toString())
           .where((line) => line.isNotEmpty)
           .map((line) => line.substring(8)) // 移除"package:"前缀
-          .any((pkg) => pkg == packageName); // 使用相等判断
+          .any((pkg) => pkg == packageName);
     } catch (e) {
       _logger.warning('检查应用停用状态失败: $packageName', e);
       return false;
