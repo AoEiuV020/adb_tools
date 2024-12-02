@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:adb_tools_interface/adb_tools_interface.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:iron_db/iron_db.dart';
 
 import 'providers/apps_provider.dart';
 import 'services/app_manager.dart';
@@ -21,7 +22,10 @@ class AppsTab extends DeviceTab {
   Widget buildTabContent(
       BuildContext context, Device device, DeviceManager deviceManager) {
     return FutureBuilder<SharedPreferences>(
-      future: SharedPreferences.getInstance(),
+      future: Future.wait([
+        SharedPreferences.getInstance(),
+        Iron.init(),
+      ]).then((results) => results[0] as SharedPreferences),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());

@@ -17,6 +17,7 @@ dependencies:
   path: ^1.8.3
   shared_preferences: ^2.2.2
   path_provider: ^2.1.2
+  iron_db: ^0.1.1
 
 dev_dependencies:
   flutter_test:

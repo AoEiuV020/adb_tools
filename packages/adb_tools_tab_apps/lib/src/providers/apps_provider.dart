@@ -16,7 +16,6 @@ class AppsProvider extends ChangeNotifier {
   final AppStorage _storage = AppStorage();
   final String _deviceId;
 
-  Map<String, AppInfo> _appInfoCache = {};
   List<AppInfo> _apps = [];
   bool _loading = false;
   bool _showSystemApps = true;
@@ -44,12 +43,6 @@ class AppsProvider extends ChangeNotifier {
   Future<void> _init() async {
     await _storage.init();
     _loadPreferences();
-    _appInfoCache = await _storage.loadAppInfos(_deviceId);
-    if (_appInfoCache.isNotEmpty) {
-      _apps = _appInfoCache.values.toList();
-      _sortApps();
-      notifyListeners();
-    }
     loadApps();
   }
 
@@ -83,17 +76,20 @@ class AppsProvider extends ChangeNotifier {
       final apps = <AppInfo>[];
 
       for (final package in packages) {
-        if (!forceRefresh && _appInfoCache.containsKey(package)) {
-          apps.add(_appInfoCache[package]!);
-        } else {
-          apps.add(AppInfo.basic(package));
+        if (!forceRefresh) {
+          // 尝试从缓存加载单个应用信息
+          final cachedApp = await _storage.loadAppInfo(_deviceId, package);
+          if (cachedApp != null) {
+            apps.add(cachedApp);
+            continue;
+          }
         }
+        apps.add(AppInfo.basic(package));
       }
 
       _apps = apps;
       _sortApps();
 
-      // 不再自动加载详细信息
       _loading = false;
       notifyListeners();
     } catch (e, stack) {
@@ -143,7 +139,6 @@ class AppsProvider extends ChangeNotifier {
   // 长按刷新：清除缓存，完全重新加载
   Future<void> forceRefresh() async {
     await _storage.clearCache(_deviceId);
-    _appInfoCache.clear();
     await loadApps(forceRefresh: true);
   }
 
@@ -190,11 +185,12 @@ class AppsProvider extends ChangeNotifier {
       _setOperating(true, '正在卸载选中的应用...');
       for (final package in _selectedPackages) {
         if (await appManager.uninstallApp(package)) {
-          _appInfoCache.remove(package);
+          await _storage.deleteAppInfo(_deviceId, package);
+          _apps.removeWhere((app) => app.packageName == package);
         }
       }
       _selectedPackages.clear();
-      await loadApps();
+      notifyListeners();
     } catch (e, stack) {
       _logger.severe('批量卸载应用失败', e, stack);
     } finally {
@@ -207,14 +203,17 @@ class AppsProvider extends ChangeNotifier {
       _setOperating(true, '正在停用选中的应用...');
       for (final package in _selectedPackages) {
         if (await appManager.disableApp(package)) {
-          final app = _appInfoCache[package];
-          if (app != null) {
-            _appInfoCache[package] = app.copyWith(enabled: false);
+          final isDisabled = await appManager.isAppDisabled(package);
+          final index = _apps.indexWhere((app) => app.packageName == package);
+          if (index != -1) {
+            final updatedApp = _apps[index].copyWith(enabled: !isDisabled);
+            _apps[index] = updatedApp;
+            await _storage.saveAppInfo(_deviceId, updatedApp);
           }
         }
       }
       _selectedPackages.clear();
-      await loadApps();
+      notifyListeners();
     } catch (e, stack) {
       _logger.severe('批量停用应用失败', e, stack);
     } finally {
@@ -227,14 +226,17 @@ class AppsProvider extends ChangeNotifier {
       _setOperating(true, '正在启用选中的应用...');
       for (final package in _selectedPackages) {
         if (await appManager.enableApp(package)) {
-          final app = _appInfoCache[package];
-          if (app != null) {
-            _appInfoCache[package] = app.copyWith(enabled: true);
+          final isDisabled = await appManager.isAppDisabled(package);
+          final index = _apps.indexWhere((app) => app.packageName == package);
+          if (index != -1) {
+            final updatedApp = _apps[index].copyWith(enabled: !isDisabled);
+            _apps[index] = updatedApp;
+            await _storage.saveAppInfo(_deviceId, updatedApp);
           }
         }
       }
       _selectedPackages.clear();
-      await loadApps();
+      notifyListeners();
     } catch (e, stack) {
       _logger.severe('批量启用应用失败', e, stack);
     } finally {
@@ -245,14 +247,11 @@ class AppsProvider extends ChangeNotifier {
   // 刷新单应用的所有信息
   Future<void> refreshApp(String packageName) async {
     try {
-      // 通过getAppInfo一次性获取所有信息
       final newApp = await appManager.getAppInfo(packageName);
-
-      // 更新应用信息
+      await _storage.saveAppInfo(_deviceId, newApp);
+      
       final index = _apps.indexWhere((app) => app.packageName == packageName);
       if (index != -1) {
-        _appInfoCache[packageName] = newApp;
-        await _storage.saveAppInfo(_deviceId, newApp);
         _apps[index] = newApp;
         notifyListeners();
       }
@@ -321,7 +320,6 @@ class AppsProvider extends ChangeNotifier {
     try {
       _setOperating(true, '正在卸载应用...');
       if (await appManager.uninstallApp(packageName)) {
-        _appInfoCache.remove(packageName);
         await _storage.deleteAppInfo(_deviceId, packageName);
         _apps.removeWhere((app) => app.packageName == packageName);
         notifyListeners();
@@ -348,7 +346,6 @@ class AppsProvider extends ChangeNotifier {
       enabled: enabled ?? oldApp.enabled,
     );
 
-    _appInfoCache[packageName] = newApp;
     await _storage.saveAppInfo(_deviceId, newApp);
     _apps[index] = newApp;
     notifyListeners();
@@ -365,19 +362,16 @@ class AppsProvider extends ChangeNotifier {
   bool isAppLoading(String packageName) => _loadingApps.contains(packageName);
 
   Future<void> loadAppDetails(String packageName) async {
-    // 避免重复加载
     if (_loadingApps.contains(packageName)) return;
-    if (_appInfoCache[packageName]?.isFullyLoaded ?? false) return;
+    
+    final existingApp = await _storage.loadAppInfo(_deviceId, packageName);
+    if (existingApp?.isFullyLoaded ?? false) return;
 
     try {
       _loadingApps.add(packageName);
       notifyListeners();
 
-      // 加载详细信息
       final fullInfo = await appManager.getAppInfo(packageName);
-
-      // 更新缓存和列表
-      _appInfoCache[packageName] = fullInfo;
       await _storage.saveAppInfo(_deviceId, fullInfo);
 
       final index = _apps.indexWhere((app) => app.packageName == packageName);
@@ -386,12 +380,10 @@ class AppsProvider extends ChangeNotifier {
       }
     } catch (e, stack) {
       _logger.severe('加载应用详细信息失败: $packageName', e, stack);
-      // 加载失败时也标记为已加载,避免反复重试
       final failedApp = AppInfo(
         packageName: packageName,
-        isFullyLoaded: true, // 标记为已加载
+        isFullyLoaded: true,
       );
-      _appInfoCache[packageName] = failedApp;
       await _storage.saveAppInfo(_deviceId, failedApp);
 
       final index = _apps.indexWhere((app) => app.packageName == packageName);
