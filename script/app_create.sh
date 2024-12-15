@@ -7,7 +7,9 @@ if [ -z "$name" ] || [ "$name" = "." ]; then
     cd "$ROOT"
     rm -f pubspec.yaml README.md
     mv .gitignore .gitignore.bak
-    flutter create --org "$organization" --template=app .
+    # 删除各平台代码
+    rm -rf windows/ macos/ linux/ ios/ android/ web/
+    flutter create --org "$organization" --template=app . $2
     dart pub add dev:melos
     cat .gitignore.bak >>.gitignore
     rm -f .gitignore.bak
